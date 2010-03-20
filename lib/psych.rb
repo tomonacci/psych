@@ -167,12 +167,49 @@ module Psych
     self.load File.open(filename)
   end
 
-  # :stopdoc:
   @domain_types = {}
-  def self.add_domain_type domain, type_tag, &block
+  ###
+  # Register a global handler for a YAML domain type. When YAML data with
+  # +domain+ and +type_tag+ are converted to Ruby objects, +block+ will be
+  # called with +tag_uri+, fully expanded URI form of the tag, and the Ruby
+  # object +value+. The return value of the +block+ will be the Ruby object
+  # representation of YAML document with the domain type.
+  #
+  # Example:
+  #   Widget = Struct.new :name, :width, :height
+  #   yaml = <<EOY
+  #   --- !example.com,2010-3/Widgets
+  #   - name: main
+  #     width: 120
+  #     height: 45
+  #   - name: pop-up
+  #     width: 70
+  #     height: 85
+  #   EOY
+  #
+  #   # Default action
+  #   p Psych.load yaml
+  #   #=> [{"name"=>"main", "width"=>120, "height"=45},
+  #   #    {"name"=>"pop-up", "width"=>70, "height"=>85}]
+  #
+  #   # Associate a block with a domain type
+  #   Psych.add_domain_type 'example.com,2010-3', 'Widgets' do |tag_uri, value|
+  #     puts "tag_uri: #{tag_uri.inspect}"
+  #     value.map do |args|
+  #       Widget.new args['name'], args['width'], args['height']
+  #     end
+  #   end
+  #
+  #   # Now documents are converted on the fly
+  #   p Psych.load yaml
+  #   #=> tag_uri: "http://example.com,2010-3:Widgets"
+  #   #   [#<struct Widget name="main", width=120, height=45>,
+  #   #    #<struct Widget name="pop-up", width=70, height=85>]
+  def self.add_domain_type domain, type_tag, &block # :yield: tag_uri, value
     @domain_types[type_tag] = [domain, block]
   end
 
+  # :stopdoc:
   @load_tags = {}
   @dump_tags = {}
   def self.add_tag tag, klass
