@@ -160,6 +160,10 @@ module Psych
     end
   end
 
+  class << self
+    alias each_document load_documents
+  end
+
   ###
   # Load the document contained in +filename+.  Returns the yaml contained in
   # +filename+ as a ruby object

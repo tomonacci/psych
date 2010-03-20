@@ -20,6 +20,14 @@ class TestPsych < MiniTest::Unit::TestCase
     assert_equal %w{ foo bar }, docs
   end
 
+  def test_each_document
+    docs = []
+    Psych.each_document("--- foo\n...\n--- bar\n...") { |doc|
+      docs << doc
+    }
+    assert_equal %w{ foo bar }, docs
+  end
+
   def test_domain_types
     got = nil
     Psych.add_domain_type 'foo.bar,2002', 'foo' do |type, val|
