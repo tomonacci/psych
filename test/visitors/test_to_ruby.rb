@@ -116,7 +116,7 @@ description:
       def test_time
         now = Time.now
         formatted = now.strftime("%Y-%m-%d %H:%M:%S") +
-          ".%06d %+.2d:00" % [now.usec, now.gmt_offset / 3600]
+          ".%09d %+.2d:00" % [now.nsec, now.gmt_offset / 3600]
 
         assert_equal now, Nodes::Scalar.new(formatted).to_ruby
       end
@@ -124,7 +124,7 @@ description:
       def test_time_utc
         now = Time.now.utc
         formatted = now.strftime("%Y-%m-%d %H:%M:%S") +
-          ".%06dZ" % [now.usec]
+          ".%09dZ" % [now.nsec]
 
         assert_equal now, Nodes::Scalar.new(formatted).to_ruby
       end
@@ -132,9 +132,25 @@ description:
       def test_time_utc_no_z
         now = Time.now.utc
         formatted = now.strftime("%Y-%m-%d %H:%M:%S") +
-          ".%06d" % [now.usec]
+          ".%09d" % [now.nsec]
 
         assert_equal now, Nodes::Scalar.new(formatted).to_ruby
+      end
+
+      def test_time_rational
+        time = Time.at(Time.now, Rational(1, 3))
+        formatted = time.strftime("%Y-%m-%d %H:%M:%S") +
+          ".%09d %+.2d:00" % [time.nsec, time.gmt_offset / 3600]
+
+        assert_equal time, Nodes::Scalar.new(formatted).to_ruby
+      end
+
+      def test_time_high_precision
+        time = Time.at(Time.now, 1.0e-20)
+        formatted = time.strftime("%Y-%m-%d %H:%M:%S") +
+          ".%09d %+.2d:00" % [time.nsec, time.gmt_offset / 3600]
+
+        assert_equal time, Nodes::Scalar.new(formatted).to_ruby
       end
 
       def test_date
