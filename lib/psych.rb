@@ -171,6 +171,7 @@ module Psych
     self.load File.open(filename)
   end
 
+  # :stopdoc:
   @domain_types = {}
   ###
   # Register a global handler for a YAML domain type. When YAML data with
@@ -210,10 +211,17 @@ module Psych
   #   #   [#<struct Widget name="main", width=120, height=45>,
   #   #    #<struct Widget name="pop-up", width=70, height=85>]
   def self.add_domain_type domain, type_tag, &block # :yield: tag_uri, value
-    @domain_types[type_tag] = [domain, block]
+    @domain_types[type_tag] = ["http://#{domain}", block]
   end
 
-  # :stopdoc:
+  def self.add_builtin_type type_tag, &block
+    @domain_types[type_tag] = ['yaml.org', block]
+  end
+
+  def self.remove_type type_tag
+    @domain_types.delete type_tag
+  end
+
   @load_tags = {}
   @dump_tags = {}
   def self.add_tag tag, klass
